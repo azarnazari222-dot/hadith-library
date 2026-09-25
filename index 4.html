@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>📚 کتابخانه حدیث شیعه</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,sans-serif;background:#f4f6f8;margin:0;color:#171717}
+.wrap{max-width:820px;margin:auto;padding:16px}
+h1{font-size:28px;margin:8px 0}.sub{color:#666;margin-bottom:18px}
+.card{background:#fff;border-radius:18px;padding:17px;margin:13px 0;box-shadow:0 3px 16px #0000000d}
+h2{margin:0 0 15px}
+label{display:block;font-weight:700;margin:10px 0 5px}
+input,textarea,select{width:100%;border:1px solid #d2d6dc;border-radius:12px;padding:12px;font-size:16px;background:#fff}
+textarea{min-height:120px;resize:vertical}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{border:0;border-radius:12px;padding:12px 15px;font-size:16px;font-weight:700;margin:5px 3px;cursor:pointer}
+.primary{background:#1769e0;color:#fff}.secondary{background:#eef1f5}.danger{background:#ffe7e7;color:#b00020}
+.notice{background:#fff8d9;border:1px solid #eadb8a;border-radius:12px;padding:12px;line-height:1.8}
+.small{font-size:13px;color:#777}
+.count{margin:10px 0;color:#666}
+.result{border:1px solid #e4e6ea;border-radius:15px;padding:14px;margin:10px 0;background:#fff;cursor:pointer}
+.result:active{transform:scale(.995)}
+.summary{font-size:17px;font-weight:800;line-height:1.9}
+.meta{color:#666;font-size:14px;line-height:1.9;margin-top:4px}
+.detail{display:none;border-top:1px solid #eee;margin-top:12px;padding-top:12px}
+.result.open .detail{display:block}
+.hadith{font-size:19px;line-height:2.05;margin:10px 0;white-space:pre-wrap}
+.translation{line-height:2;margin:8px 0}
+mark{background:#fff36a;padding:1px 2px;border-radius:3px}
+.empty{text-align:center;color:#777;padding:22px}
+.pill{display:inline-block;background:#f0f2f5;border-radius:20px;padding:5px 9px;margin:3px;color:#555}
+.actions{display:flex;flex-wrap:wrap;gap:4px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.wrap{padding:12px}h1{font-size:25px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>📚 کتابخانه حدیث شیعه</h1>
+<div class="sub">جستجو، ثبت و مدیریت احادیث</div>
+<div class="notice">💡 در فهرست فقط اطلاعات کوتاه حدیث دیده می‌شود. برای دیدن متن کامل، روی همان حدیث کلیک کن.</div>
+
+<div class="card">
+<h2>🔎 جستجو</h2>
+<input id="search" oninput="render()" placeholder="عبارت، شخص، کتاب، جلد، باب یا شماره حدیث">
+<div class="grid">
+<div><label>👤 شخص</label><select id="filterPerson" onchange="render()"><option value="">همه اشخاص</option></select></div>
+<div><label>📚 کتاب</label><select id="filterBook" onchange="render()"><option value="">همه کتاب‌ها</option></select></div>
+</div>
+<div id="count" class="count"></div>
+<div id="results"></div>
+</div>
+
+<div class="card">
+<h2>➕ افزودن حدیث</h2>
+<div class="grid">
+<div>
+<label>👤 شخص / راوی</label>
+<select id="personSelect"></select>
+<input id="personNew" placeholder="اگر شخص جدید است، نام را اینجا بنویس">
+</div>
+<div>
+<label>📚 کتاب</label>
+<select id="bookSelect"></select>
+<input id="bookNew" placeholder="اگر کتاب جدید است، نام را اینجا بنویس">
+</div>
+<div><label>📖 جلد</label><input id="volume" placeholder="مثلاً ۱"></div>
+<div><label>📑 فصل / باب</label><input id="chapter" placeholder="مثلاً باب عقل و جهل"></div>
+<div><label>🔢 شماره حدیث</label><input id="number" placeholder="مثلاً ۱۲۳"></div>
+<div><label>📄 صفحه</label><input id="page" placeholder="مثلاً ۴۵"></div>
+</div>
+<label>📝 نام / عنوان حدیث (اختیاری)</label>
+<input id="title" placeholder="مثلاً ارزش انسان">
+<label>📝 متن حدیث</label>
+<textarea id="text" placeholder="متن کامل حدیث"></textarea>
+<label>🌍 ترجمه</label>
+<textarea id="translation" placeholder="ترجمه حدیث"></textarea>
+<label>🏷️ موضوع / برچسب</label>
+<input id="tags" placeholder="مثلاً اخلاق، علم، ایمان">
+<button class="primary" onclick="addHadith()">💾 ذخیره حدیث</button>
+<button class="secondary" onclick="clearForm()">پاک کردن فرم</button>
+<div id="saveMsg" class="small"></div>
+</div>
+
+<div class="card">
+<h2>💾 پشتیبان‌گیری</h2>
+<button class="secondary" onclick="exportData()">⬇️ ذخیره پشتیبان</button>
+<button class="secondary" onclick="document.getElementById('importFile').click()">⬆️ برگرداندن پشتیبان</button>
+<input id="importFile" type="file" accept=".json,application/json" style="display:none" onchange="importData(event)">
+<button class="danger" onclick="deleteAll()">حذف همه حدیث‌ها</button>
+<p class="small">پشتیبان یک فایل JSON است و می‌توانی آن را در Files آیفون نگه داری.</p>
+</div>
+</div>
+
+<script>
+const KEY="hadithData", OLD_KEY="my_hadith_library_v1";
+let data=[];
+try{
+ const a=JSON.parse(localStorage.getItem(KEY)||"null");
+ const b=JSON.parse(localStorage.getItem(OLD_KEY)||"null");
+ if(Array.isArray(a)&&a.length)data=a;
+ else if(Array.isArray(b))data=b;
+ else if(Array.isArray(a))data=a;
+}catch(e){data=[]}
+
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data));return true}catch(e){return false}}
+function val(id){return document.getElementById(id).value.trim()}
+function esc(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function highlight(s,q){
+ let out=esc(s); if(!q)return out;
+ for(const word of q.trim().split(/\s+/).filter(Boolean).slice(0,8)){
+  const re=new RegExp("("+word.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi");
+  out=out.replace(re,"<mark>$1</mark>");
+ }
+ return out;
+}
+function unique(field){return [...new Set(data.map(h=>h[field]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"fa"))}
+function fillSelect(id,items,allText){
+ const el=document.getElementById(id), old=el.value;
+ el.innerHTML='<option value="">'+allText+'</option>'+items.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
+ if(items.includes(old))el.value=old;
+}
+function refreshSelects(){
+ fillSelect("filterPerson",unique("person"),"همه اشخاص");
+ fillSelect("filterBook",unique("book"),"همه کتاب‌ها");
+ const ps=unique("person"), bs=unique("book");
+ document.getElementById("personSelect").innerHTML='<option value="">انتخاب شخص موجود...</option>'+ps.map(x=>'<option>'+esc(x)+'</option>').join("");
+ document.getElementById("bookSelect").innerHTML='<option value="">انتخاب کتاب موجود...</option>'+bs.map(x=>'<option>'+esc(x)+'</option>').join("");
+}
+function addHadith(){
+ const person=val("personNew")||val("personSelect");
+ const book=val("bookNew")||val("bookSelect");
+ const h={
+  id:Date.now().toString(),person,book,volume:val("volume"),chapter:val("chapter"),
+  number:val("number"),page:val("page"),title:val("title"),text:val("text"),
+  translation:val("translation"),tags:val("tags")
+ };
+ if(!h.text&&!h.translation){alert("لطفاً حداقل متن حدیث یا ترجمه را وارد کن.");return}
+ data.unshift(h); const ok=save(); clearForm(); refreshSelects(); render();
+ document.getElementById("saveMsg").textContent=ok?"✅ حدیث ذخیره شد.":"⚠️ ذخیره‌سازی انجام نشد؛ از پشتیبان‌گیری استفاده کن.";
+}
+function clearForm(){
+ ["personNew","bookNew","volume","chapter","number","page","title","text","translation","tags"].forEach(x=>document.getElementById(x).value="");
+ document.getElementById("personSelect").value="";
+ document.getElementById("bookSelect").value="";
+}
+function render(){
+ const q=val("search").toLowerCase(), fp=val("filterPerson"), fb=val("filterBook");
+ const arr=data.filter(h=>{
+  const all=Object.values(h).join(" ").toLowerCase();
+  return (!q||all.includes(q))&&(!fp||h.person===fp)&&(!fb||h.book===fb);
+ });
+ document.getElementById("count").textContent=arr.length+" حدیث پیدا شد";
+ const box=document.getElementById("results");
+ if(!arr.length){box.innerHTML='<div class="empty">حدیثی مطابق جستجو پیدا نشد.</div>';return}
+ box.innerHTML=arr.map((h,i)=>`
+ <div class="result" onclick="toggleDetail(this)">
+  <div class="summary">${h.title?highlight(h.title,q):"📜 حدیث شماره "+esc(h.number||"—")}</div>
+  <div class="meta">👤 ${esc(h.person||"—")}　📚 ${esc(h.book||"—")}　📖 جلد ${esc(h.volume||"—")}　🔢 حدیث ${esc(h.number||"—")}　📄 صفحه ${esc(h.page||"—")}</div>
+  <div class="detail">
+   <div class="meta">📑 باب: ${esc(h.chapter||"—")}　🏷️ ${esc(h.tags||"—")}</div>
+   <div class="hadith">${highlight(h.text||"",q)}</div>
+   ${h.translation?'<div class="translation"><b>ترجمه:</b> '+highlight(h.translation,q)+'</div>':''}
+   <button class="danger" onclick="event.stopPropagation();removeHadith('${h.id}')">حذف حدیث</button>
+  </div>
+ </div>`).join("");
+}
+function toggleDetail(el){el.classList.toggle("open")}
+function removeHadith(id){if(confirm("این حدیث حذف شود؟")){data=data.filter(h=>h.id!==id);save();refreshSelects();render()}}
+function deleteAll(){if(confirm("همه حدیث‌ها حذف شوند؟")){data=[];save();refreshSelects();render()}}
+function exportData(){
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="hadith-backup.json";a.click();
+ setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function importData(e){
+ const f=e.target.files[0];if(!f)return;
+ const r=new FileReader();
+ r.onload=()=>{try{const x=JSON.parse(r.result);if(!Array.isArray(x))throw 0;data=x;save();refreshSelects();render();alert("✅ پشتیبان با موفقیت برگردانده شد.")}catch(e){alert("فایل پشتیبان معتبر نیست.")}};
+ r.readAsText(f);e.target.value="";
+}
+refreshSelects();render();
+</script>
+</body>
+</html>
